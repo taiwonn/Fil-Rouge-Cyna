@@ -1,0 +1,40 @@
+- name: Installer et configurer l'agent Zabbix sur les serveurs Linux
+  hosts: all
+  become: true
+
+  vars:
+    zabbix_hostnames:
+      "172.16.5.8": "Terraform"
+      "172.16.3.7": "Splunk"
+      "172.16.3.6": "Rsyslog"
+      "172.16.5.9": "Rsync"
+      "172.16.2.5": "NTP"
+
+
+  tasks:
+    - name: Installer le paquet zabbix-agent sans ajout de repo
+      apt:
+        name: zabbix-agent
+        state: present
+        update_cache: yes
+
+    - name: Configurer le fichier zabbix_agentd.conf (Server)
+lineinfile:
+        path: /etc/zabbix/zabbix_agentd.conf
+        regexp: '^Server='
+        line: 'Server=172.16.5.6'
+
+    - name: Configurer le fichier zabbix_agentd.conf (ServerActive)
+      lineinfile:
+        path: /etc/zabbix/zabbix_agentd.conf
+        regexp: '^ServerActive='
+        line: 'ServerActive=172.16.5.6'
+
+    - name: D  finir le hostname Zabbix
+      lineinfile:
+        path: /etc/zabbix/zabbix_agentd.conf
+        regexp: '^Hostname='
+        line: "Hostname={{ zabbix_hostnames[inventory_hostname] | default(ansible_default_ipv4.address) }}"
+
+   - name: Red  marrer proprement le service zabbix-agent
+      command: systemctl restart zabbix-agent.service
