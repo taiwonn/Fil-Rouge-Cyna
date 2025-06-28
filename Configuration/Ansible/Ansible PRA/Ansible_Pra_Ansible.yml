@@ -1,0 +1,11 @@
+---
+- name: D  clencher un d  ploiement Terraform sur la machine 172.16.5.8
+  hosts: 172.16.5.8
+  become: true
+  tasks:
+    - name: Lancer Terraform pour restaurer Ansible
+      shell: |
+        terraform init
+        terraform apply -auto-approve
+      args:
+        chdir: /root/terraform/pra_ansible
